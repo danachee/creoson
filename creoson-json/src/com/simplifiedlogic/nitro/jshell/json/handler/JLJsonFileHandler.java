@@ -26,7 +26,14 @@ import java.util.Map;
 import java.util.Vector;
 
 import com.ptc.cipjava.jxthrowable;
+import com.ptc.pfc.pfcInterference.GlobalEvaluator;
+import com.ptc.pfc.pfcInterference.GlobalInterference;
+import com.ptc.pfc.pfcInterference.GlobalInterferences;
+import com.ptc.pfc.pfcInterference.pfcInterference;
+import com.ptc.pfc.pfcSelect.SelectionPair;
+
 import com.ptc.pfc.pfcBase.Point3D;
+import com.simplifiedlogic.nitro.jlink.calls.assembly.CallAssembly;
 import com.simplifiedlogic.nitro.jlink.calls.session.CallSession;
 import com.simplifiedlogic.nitro.jlink.calls.solid.CallMassProperty;
 import com.simplifiedlogic.nitro.jlink.calls.solid.CallSolid;
@@ -111,8 +118,9 @@ public class JLJsonFileHandler extends JLJsonCommandHandler implements JLFileReq
 		else if (function.equals(FUNC_LOAD_MATL_FILE)) return actionLoadMaterialFile(sessionId, input);
 		else if (function.equals(FUNC_DELETE_MATERIAL)) return actionDeleteMaterial(sessionId, input);
 		else if (function.equals(FUNC_GET_ACCURACY)) return actionGetAccuracy(sessionId, input);
+		else if (function.equals(FUNC_INTERFERENCES)) return actionInterferences(sessionId, input);
 		else {
-			throw new JLIException("Unknown function name: " + function);
+			throw new JLIException("Unknown function name: <" + function + "> and line is <" + FUNC_INTERFERENCES + ">");
 		}
 	}
 	
@@ -731,6 +739,41 @@ public class JLJsonFileHandler extends JLJsonCommandHandler implements JLFileReq
        		out.put(OUTPUT_RELATIVE, String.valueOf(accuracy.isRelative()));
         }
     	return out;
+	}
+
+	private Hashtable<String, Object> actionInterferences(String sessionId, Hashtable<String, Object> input) throws JLIException {
+        // String filename = checkStringParameter(input, PARAM_MODEL, false);
+		Hashtable<String, Object> output = new Hashtable<>();
+	
+		try {
+			JLISession sess = JLISession.getSession(sessionId);
+			CallSession session = JLConnectionUtil.getJLSession(sess.getConnectionId());
+			CallAssembly assembly = (CallAssembly)JlinkUtils.getFile(session, null, false);
+
+			GlobalEvaluator globalEvaluator = pfcInterference.CreateGlobalEvaluator(assembly.getAssembly());
+			GlobalInterferences globalInterferences = globalEvaluator.ComputeGlobalInterference(true);
+			ArrayList<HashMap<String, Object>> interferences = new ArrayList<>();
+	
+			if (globalInterferences == null) {
+				output.put("num_interferences", 0);
+			} else {
+				// ToDo: Add Log Message
+				int size = globalInterferences.getarraysize();
+				output.put("num_interferences", size);
+				for(int j = 0; j < size; j++) {
+					GlobalInterference interference = globalInterferences.get(j);
+					SelectionPair interferingPairs = interference.GetSelParts();
+					HashMap<String, Object> detail = new HashMap<>();
+					detail.put("part_1_name", interferingPairs.GetSel1().GetSelModel().GetFullName());
+					detail.put("part_2_name", interferingPairs.GetSel2().GetSelModel().GetFullName());
+					detail.put("interference_volume", interference.GetVolume().ComputeVolume());
+					interferences.add(detail);
+				}
+			}
+			output.put("interferences", interferences);
+		} catch(jxthrowable j) {
+		}
+		return output;
 	}
 
     protected JLConstraintInput readConstraint(Map<String, Object> rec) throws JLIException {
