@@ -15,7 +15,7 @@
 	</target>
 
 	<target name="compile" depends="clean">
-		<javac compiler="${build.compiler}" source="1.8" debug="true" debuglevel="lines,vars,source" srcdir="${source_dir}" destdir="${class_dir}">
+		<javac compiler="${build.compiler}" target="1.8" source="1.8" debug="true" debuglevel="lines,vars,source" srcdir="${source_dir}" destdir="${class_dir}">
     		<classpath>
 				<path>
 	    			<fileset dir="${apache_commons_codec_dir}">
