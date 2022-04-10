@@ -19,6 +19,7 @@
 package com.simplifiedlogic.nitro.jlink.calls.solid;
 
 import com.ptc.cipjava.jxthrowable;
+import com.ptc.pfc.pfcBase.Point3D;
 import com.ptc.pfc.pfcSolid.Inertia;
 import com.ptc.pfc.pfcSolid.MassProperty;
 import com.simplifiedlogic.nitro.jlink.impl.NitroConstants;
@@ -56,6 +57,11 @@ public class CallMassProperty {
 	public double getSurfaceArea() throws jxthrowable {
         if (NitroConstants.DEBUG_JLINK) DebugLogging.sendTimerMessage("MassProperty,GetSurfaceArea", 0, NitroConstants.DEBUG_JLINK_KEY);
 		return massprop.GetSurfaceArea();
+	}
+
+	public Point3D  getGravityCenter() throws jxthrowable {
+        if (NitroConstants.DEBUG_JLINK) DebugLogging.sendTimerMessage("MassProperty,GetGravityCenter", 0, NitroConstants.DEBUG_JLINK_KEY);
+		return massprop.GetGravityCenter();
 	}
 
 	public CallInertia getCenterGravityInertiaTensor() throws jxthrowable {

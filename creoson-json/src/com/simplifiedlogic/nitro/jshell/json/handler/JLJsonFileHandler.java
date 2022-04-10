@@ -20,10 +20,16 @@ package com.simplifiedlogic.nitro.jshell.json.handler;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
+import com.ptc.cipjava.jxthrowable;
+import com.ptc.pfc.pfcBase.Point3D;
+import com.simplifiedlogic.nitro.jlink.calls.session.CallSession;
+import com.simplifiedlogic.nitro.jlink.calls.solid.CallMassProperty;
+import com.simplifiedlogic.nitro.jlink.calls.solid.CallSolid;
 import com.simplifiedlogic.nitro.jlink.data.AssembleInstructions;
 import com.simplifiedlogic.nitro.jlink.data.FileAssembleResults;
 import com.simplifiedlogic.nitro.jlink.data.FileInfoResults;
@@ -34,10 +40,13 @@ import com.simplifiedlogic.nitro.jlink.data.JLConstraintInput;
 import com.simplifiedlogic.nitro.jlink.data.JLTransform;
 import com.simplifiedlogic.nitro.jlink.data.ListMaterialResults;
 import com.simplifiedlogic.nitro.jlink.data.MasspropsData;
+import com.simplifiedlogic.nitro.jlink.impl.JlinkUtils;
 import com.simplifiedlogic.nitro.jlink.intf.IJLFile;
 import com.simplifiedlogic.nitro.jshell.json.request.JLFileRequestParams;
 import com.simplifiedlogic.nitro.jshell.json.response.JLFileResponseParams;
 import com.simplifiedlogic.nitro.rpc.JLIException;
+import com.simplifiedlogic.nitro.rpc.JLISession;
+import com.simplifiedlogic.nitro.util.JLConnectionUtil;
 
 /**
  * Handle JSON requests for "file" functions
@@ -305,6 +314,23 @@ public class JLJsonFileHandler extends JLJsonCommandHandler implements JLFileReq
     	return out;
 	}
 
+	private static Map<String, Object> getCenterOfMassData(String sessionId) throws JLIException {
+		Map<String, Object> centerOfMassData = new HashMap<>();
+	
+		try {
+			JLISession sess = JLISession.getSession(sessionId);
+			CallSession session = JLConnectionUtil.getJLSession(sess.getConnectionId());
+			CallSolid solid = JlinkUtils.getModelSolid(session, null);
+			CallMassProperty mp = solid.getMassProperty(null);
+			Point3D cg = mp.getGravityCenter();
+			centerOfMassData.put("x", cg.get(0));
+			centerOfMassData.put("y", cg.get(1));
+			centerOfMassData.put("z", cg.get(2));
+		} catch(jxthrowable j) {
+		}
+		return centerOfMassData;
+	}
+
 	private Hashtable<String, Object> actionMassprops(String sessionId, Hashtable<String, Object> input) throws JLIException {
         String filename = checkStringParameter(input, PARAM_MODEL, false);
         
@@ -317,6 +343,8 @@ public class JLJsonFileHandler extends JLJsonCommandHandler implements JLFileReq
 			out.put(OUTPUT_DENSITY, result.getDensity());
 			out.put(OUTPUT_SURFACE_AREA, result.getSurfaceArea());
 			
+			Map<String, Object> centerOfMassData = getCenterOfMassData(sessionId);
+			out.put("gravity_center", centerOfMassData);
 			if (result.getCenterGravityInertiaTensor()!=null) {
 				Hashtable<String, Object> tmp = writeInertia(result.getCenterGravityInertiaTensor());
 				if (tmp!=null)
