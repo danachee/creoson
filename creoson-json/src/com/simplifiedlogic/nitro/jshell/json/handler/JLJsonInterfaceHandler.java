@@ -128,6 +128,8 @@ public class JLJsonInterfaceHandler extends JLJsonCommandHandler implements JLIn
         	results = intfHandler.exportPV(model, filename, dirname, sessionId);
         else if (TYPE_STEP.equalsIgnoreCase(type))
         	results = intfHandler.exportSTEP(model, filename, dirname, geomType, advanced, sessionId);
+        else if (TYPE_STL.equalsIgnoreCase(type))
+            results = intfHandler.exportSTL(model, filename, dirname, geomType, advanced, sessionId);
         else if (TYPE_VRML.equalsIgnoreCase(type))
         	results = intfHandler.exportVRML(model, filename, dirname, sessionId);
         else if (TYPE_NEUTRAL.equalsIgnoreCase(type))

@@ -31,6 +31,7 @@ public interface IJLTransfer {
     public static final String TYPE_TIFF       = "TIFF";
     public static final String TYPE_POSTSCRIPT = "POSTSCRIPT";
     public static final String TYPE_STEP       = "STEP";
+    public static final String TYPE_STL        = "STL";
     public static final String TYPE_IGES       = "IGES";
     public static final String TYPE_VRML       = "VRML";
     public static final String TYPE_CATIA      = "CATIA";
@@ -50,6 +51,7 @@ public interface IJLTransfer {
     public static final String EXT_POSTSCRIPT = ".ps";
     public static final String EXT_PLOT       = ".plt";
     public static final String EXT_STEP       = ".stp";
+	public static final String EXT_STL        = ".stl";
     public static final String EXT_IGES       = ".igs";
     public static final String EXT_VRML       = ".wrl";
     public static final String EXT_CATIA      = ".ct";
@@ -103,6 +105,13 @@ public interface IJLTransfer {
 			String filename, String dirname, String geomType, 
 			boolean advanced, AbstractJLISession sess) throws JLIException;
 	
+	public ExportResults exportSTL(String model,
+			String filename, String dirname, String geomType,
+			boolean advanced, String sessionId) throws JLIException;
+	public ExportResults exportSTL(String model,
+			String filename, String dirname, String geomType,
+			boolean advanced, AbstractJLISession sess) throws JLIException;
+
 	public ExportResults exportIGES(String model, 
 			String filename, String dirname, String geomType, 
 			boolean advanced, String sessionId) throws JLIException;

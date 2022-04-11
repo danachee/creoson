@@ -71,6 +71,7 @@ public interface JLInterfaceRequestParams {
     public static final String TYPE_TIFF       = "TIFF";
     public static final String TYPE_POSTSCRIPT = "POSTSCRIPT";
     public static final String TYPE_STEP       = "STEP";
+    public static final String TYPE_STL        = "STL";
     public static final String TYPE_IGES       = "IGES";
     public static final String TYPE_VRML       = "VRML";
     public static final String TYPE_CATIA      = "CATIA";

@@ -84,6 +84,14 @@ public class CallExportInstructions {
 		return new CallExportInstructions(instr);
 	}
 	
+	public static CallExportInstructions createSTLExport() throws jxthrowable {
+        if (NitroConstants.DEBUG_JLINK) DebugLogging.sendTimerMessage("pfcModel,STLASCIIExportInstructions_Create", 0, NitroConstants.DEBUG_JLINK_KEY);
+		ExportInstructions instr = pfcModel.STLASCIIExportInstructions_Create(null);
+		if (instr==null)
+			return null;
+		return new CallExportInstructions(instr);
+	}
+
 	public static CallExportInstructions createIGES3DExport(AssemblyConfiguration inConfiguration, CallGeometryFlags inGeometry) throws jxthrowable {
         if (NitroConstants.DEBUG_JLINK) DebugLogging.sendTimerMessage("pfcExport,IGES3DNewExportInstructions_Create", 0, NitroConstants.DEBUG_JLINK_KEY);
 		ExportInstructions instr = pfcExport.IGES3DNewExportInstructions_Create(inConfiguration, inGeometry.getFlags());

@@ -67,6 +67,7 @@ public class JLTransfer implements IJLTransfer {
     public static final int TRAN_DXF		= 12;
     public static final int TRAN_PDF        = 13;
     public static final int TRAN_NEUTRAL    = 14;
+    public static final int TRAN_STL        = 15;
     
     public static final String OPTION_INTF3D_OUT_DEFAULT = "intf3d_out_default_option";
 
@@ -135,6 +136,109 @@ public class JLTransfer implements IJLTransfer {
         	}
     	}
 	}
+
+	/* (non-Javadoc)
+	 * @see com.simplifiedlogic.nitro.jlink.intf.IJLTransfer#exportSTL(java.lang.String, java.lang.String, java.lang.String, java.lang.String, boolean, java.lang.String)
+	 */
+	@Override
+	public ExportResults exportSTL(String model, String filename, String dirname, String geomType, boolean advanced, String sessionId)
+			throws JLIException {
+
+        JLISession sess = JLISession.getSession(sessionId);
+
+        return exportSTL(model, filename, dirname, geomType, advanced, sess);
+	}
+
+	/* (non-Javadoc)
+	 * @see com.simplifiedlogic.nitro.jlink.intf.IJLTransfer#exportSTL(java.lang.String, java.lang.String, java.lang.String, java.lang.String, boolean, com.simplifiedlogic.nitro.jlink.data.AbstractJLISession)
+	 */
+	@Override
+	public ExportResults exportSTL(String model, String filename, String dirname, String geomType, boolean advanced, AbstractJLISession sess)
+			throws JLIException {
+
+		DebugLogging.sendDebugMessage("interface.exportSTL: " + model, NitroConstants.DEBUG_KEY);
+		if (sess==null)
+			throw new JLIException("No session found");
+
+		if (!advanced)
+			validateGeomType(geomType);
+
+        long start = 0;
+        if (NitroConstants.TIME_TASKS)
+            start = System.currentTimeMillis();
+        try {
+	        JLGlobal.loadLibrary();
+
+	        CallSession session = JLConnectionUtil.getJLSession(sess.getConnectionId());
+	        if (session == null)
+	            return null;
+
+	        CallModel m;
+	        m = JlinkUtils.getFile(session, model, true);
+
+	        if (filename==null)
+                filename = generateFilenameForModel(m, TRAN_STL);
+	        else
+                filename = NitroUtils.setFileExtension(filename, EXT_STL);
+
+	        JlinkUtils.validateFilename(filename);
+
+	        String olddir = session.getCurrentDirectory();
+	        if (dirname == null) {
+	            dirname = olddir;
+	        }
+	        dirname = JlinkUtils.resolveRelativePath(session, dirname);
+
+	        NitroUtils.validateDirFile(dirname, filename, true);
+
+	        if (!advanced) {
+		        // CallGeometryFlags geomFlags = CallGeometryFlags.create();
+		        // resolveGeomFlags(session, geomFlags, geomType);
+		        CallExportInstructions pxi = CallExportInstructions.createSTLExport();
+
+		        if (dirname != null && !dirname.equals(olddir)) {
+		            JlinkUtils.changeDirectory(session, dirname);
+		            try {
+                        m.export(filename, pxi);
+		            }
+		            finally {
+                        JlinkUtils.changeDirectory(session, olddir);
+		            }
+		        }
+		        else {
+                    m.export(filename, pxi);
+		        }
+	        }
+	        else {
+		        if (dirname != null && !dirname.equals(olddir)) {
+		            JlinkUtils.changeDirectory(session, dirname);
+		            try {
+                        exportAdvanced(session, m, filename, ExportType.EXPORT_STL_ASCII, "export_profiles_stl");
+		            }
+		            finally {
+                        JlinkUtils.changeDirectory(session, olddir);
+		            }
+		        }
+		        else {
+                    exportAdvanced(session, m, filename, ExportType.EXPORT_STL_ASCII, "export_profiles_stl");
+		        }
+	        }
+
+	        ExportResults result = new ExportResults();
+	        result.setDirname(dirname);
+	        result.setFilename(filename);
+
+	        return result;
+        }
+        catch (jxthrowable e) {
+            throw JlinkUtils.createException(e);
+        }
+        finally {
+            if (NitroConstants.TIME_TASKS) {
+                DebugLogging.sendTimerMessage("interface.exportSTL,"+model, start, NitroConstants.DEBUG_KEY);
+            }
+        }
+    }
 
 	/* (non-Javadoc)
 	 * @see com.simplifiedlogic.nitro.jlink.intf.IJLTransfer#exportSTEP(java.lang.String, java.lang.String, java.lang.String, java.lang.String, boolean, java.lang.String)
