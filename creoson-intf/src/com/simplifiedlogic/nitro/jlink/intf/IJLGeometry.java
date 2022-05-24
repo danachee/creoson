@@ -18,11 +18,13 @@
  */
 package com.simplifiedlogic.nitro.jlink.intf;
 
+import java.util.Hashtable;
 import java.util.List;
 
 import com.simplifiedlogic.nitro.jlink.data.AbstractJLISession;
 import com.simplifiedlogic.nitro.jlink.data.ContourData;
 import com.simplifiedlogic.nitro.jlink.data.JLBox;
+import com.simplifiedlogic.nitro.jlink.data.PointData;
 import com.simplifiedlogic.nitro.jlink.data.SurfaceData;
 import com.simplifiedlogic.nitro.rpc.JLIException;
 
@@ -37,4 +39,6 @@ public interface IJLGeometry {
     public List<ContourData> getEdges(String filename, List<Integer> surfaceIds, String sessionId) throws JLIException;
     public List<ContourData> getEdges(String filename, List<Integer> surfaceIds, AbstractJLISession sess) throws JLIException;
 
+    public Hashtable<String, List<PointData>> getPoints(String sessionId) throws JLIException;
+    public Hashtable<String, List<PointData>> getPoints(AbstractJLISession sess) throws JLIException;
 }
