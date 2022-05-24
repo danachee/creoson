@@ -18,19 +18,24 @@
  */
 package com.simplifiedlogic.nitro.jshell.json.handler;
 
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Vector;
 
 import com.simplifiedlogic.nitro.jlink.data.ContourData;
 import com.simplifiedlogic.nitro.jlink.data.EdgeData;
 import com.simplifiedlogic.nitro.jlink.data.JLBox;
 import com.simplifiedlogic.nitro.jlink.data.SurfaceData;
+import com.simplifiedlogic.nitro.jlink.data.PointData;
 import com.simplifiedlogic.nitro.jlink.intf.IJLGeometry;
 import com.simplifiedlogic.nitro.jshell.json.request.JLGeometryRequestParams;
 import com.simplifiedlogic.nitro.jshell.json.response.JLGeometryResponseParams;
 import com.simplifiedlogic.nitro.rpc.JLIException;
+
+import org.apache.commons.codec.net.QCodec;
 
 /**
  * Handle JSON requests for "geometry" functions
@@ -59,6 +64,7 @@ public class JLJsonGeometryHandler extends JLJsonCommandHandler implements JLGeo
 		if (function.equals(FUNC_BOUND_BOX)) return actionBoundingBox(sessionId, input);
 		else if (function.equals(FUNC_GET_SURFACES)) return actionGetSurfaces(sessionId, input);
 		else if (function.equals(FUNC_GET_EDGES)) return actionGetEdges(sessionId, input);
+		else if (function.equals(FUNC_GET_POINTS)) return actionGetPoints(sessionId, input);
 		else {
 			throw new JLIException("Unknown function name: " + function);
 		}
@@ -151,4 +157,26 @@ public class JLJsonGeometryHandler extends JLJsonCommandHandler implements JLGeo
     	return out;
 	}
 
+	private Hashtable<String, Object> actionGetPoints(String sessionId, Hashtable<String, Object> input) throws JLIException {
+		Hashtable<String, Object> outAll = new Hashtable<String, Object>();
+		Hashtable<String, List<PointData>> conts = geomHandler.getPoints(sessionId);
+		if (conts!=null) {
+			for (Enumeration<String> fileset = conts.keys(); fileset.hasMoreElements(); ){
+				String key = fileset.nextElement();
+				List<PointData> cont = conts.get(key);
+				Vector<Map<String, Object>> outOuter = new Vector<Map<String, Object>>();
+				for (PointData pd : cont) {
+					Hashtable<String, Object> outInner = new Hashtable<String, Object>();
+					outInner.put(OUTPUT_NAME, pd.getName());
+					double [] loc = pd.getLocation();
+					outInner.put(OUTPUT_XVAL, loc[0]);
+					outInner.put(OUTPUT_YVAL, loc[1]);
+					outInner.put(OUTPUT_ZVAL, loc[2]);
+					outOuter.add(outInner);
+				}
+				outAll.put(key, outOuter);
+			}
+		}
+		return outAll;
+	}
 }
