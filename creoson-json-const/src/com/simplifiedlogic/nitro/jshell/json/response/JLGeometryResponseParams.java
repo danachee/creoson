@@ -47,6 +47,11 @@ public interface JLGeometryResponseParams {
 	public static final String OUTPUT_ZMIN	= "zmin";
 	public static final String OUTPUT_ZMAX	= "zmax";
 
+    public static final String OUTPUT_NAME	= "name";
+    public static final String OUTPUT_XVAL	= "xval";
+    public static final String OUTPUT_YVAL	= "yval";
+    public static final String OUTPUT_ZVAL	= "zval";
+
 	// traversal field values
 	public static final String TRAVERSE_INTERNAL = "internal";
 	public static final String TRAVERSE_EXTERNAL = "external";
