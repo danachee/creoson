@@ -35,8 +35,6 @@ import com.simplifiedlogic.nitro.jshell.json.request.JLGeometryRequestParams;
 import com.simplifiedlogic.nitro.jshell.json.response.JLGeometryResponseParams;
 import com.simplifiedlogic.nitro.rpc.JLIException;
 
-import org.apache.commons.codec.net.QCodec;
-
 /**
  * Handle JSON requests for "geometry" functions
  * 
