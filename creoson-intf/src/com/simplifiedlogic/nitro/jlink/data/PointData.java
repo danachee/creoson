@@ -31,9 +31,6 @@ public class PointData implements Serializable {
 	private static final long serialVersionUID = 2L;
 	
 	String name;
-	String status;
-	int featureId;
-	int featureNumber;
 	JLPoint point;
 	
 	/**
@@ -49,58 +46,21 @@ public class PointData implements Serializable {
 		this.name = name;
 	}
 	/**
-	 * @return Feature status
-	 */
-	public String getStatus() {
-		return status;
-	}
-	/**
-	 * @param status Feature status
-	 */
-	public void setStatus(String status) {
-		this.status = status;
-	}
-	/**
-	 * @return Feature ID
-	 */
-	public int getFeatureId() {
-		return featureId;
-	}
-	/**
-	 * @param featureId Feature ID
-	 */
-	public void setFeatureId(int featureId) {
-		this.featureId = featureId;
-	}
-	/**
-	 * @return Feature type
-	 */
-	public String getFeatureType() {
-		return featureType;
-	}
-	/**
-	 * @param featureType Feature type
-	 */
-	public void setFeatureType(String featureType) {
-		this.featureType = featureType;
-	}
-	/**
-	 * @return Feature Number
-	 */
-	public int getFeatureNumber() {
-		return featureNumber;
-	}
-	/**
-	 * @param featureNumber Feature Number
-	 */
-	public void setFeatureNumber(int featureNumber) {
-		this.featureNumber = featureNumber;
-	}
-	/**
 	 * @return location of Point
 	 */
 	public double [] getLocation() {
 		double [] ret = {point.getX(), point.getY(), point.getZ()};
 		return ret;
+	}
+	/**
+	 * @return location of Point
+	 */
+	public void setLocation(double x, double y, double z) {
+		if (point == null) {
+			point = new JLPoint();
+		}
+		point.setX(x);
+		point.setY(y);
+		point.setZ(z);
 	}
 }
