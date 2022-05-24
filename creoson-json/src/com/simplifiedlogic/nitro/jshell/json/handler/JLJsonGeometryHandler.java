@@ -156,25 +156,19 @@ public class JLJsonGeometryHandler extends JLJsonCommandHandler implements JLGeo
 	}
 
 	private Hashtable<String, Object> actionGetPoints(String sessionId, Hashtable<String, Object> input) throws JLIException {
-		Hashtable<String, Object> outAll = new Hashtable<String, Object>();
+		Hashtable<String, Object> out = new Hashtable<String, Object>();
 		Hashtable<String, List<PointData>> conts = geomHandler.getPoints(sessionId);
 		if (conts!=null) {
-			for (Enumeration<String> fileset = conts.keys(); fileset.hasMoreElements(); ){
+			for (Enumeration<String> fileset = conts.keys(); fileset.hasMoreElements(); ) {
 				String key = fileset.nextElement();
 				List<PointData> cont = conts.get(key);
-				Vector<Map<String, Object>> outOuter = new Vector<Map<String, Object>>();
+				Hashtable<String, Object> outInner = new Hashtable<String, Object>();
 				for (PointData pd : cont) {
-					Hashtable<String, Object> outInner = new Hashtable<String, Object>();
-					outInner.put(OUTPUT_NAME, pd.getName());
-					double [] loc = pd.getLocation();
-					outInner.put(OUTPUT_XVAL, loc[0]);
-					outInner.put(OUTPUT_YVAL, loc[1]);
-					outInner.put(OUTPUT_ZVAL, loc[2]);
-					outOuter.add(outInner);
+					outInner.put(pd.getName(), pd.getLocation());
 				}
-				outAll.put(key, outOuter);
+				out.put(key, outInner);
 			}
 		}
-		return outAll;
+		return out;
 	}
 }
