@@ -361,7 +361,7 @@ public class JLGeometry implements IJLGeometry {
 		}
 		finally {
 			if (NitroConstants.TIME_TASKS) {
-				DebugLogging.sendTimerMessage("geometry.get_edges", start, NitroConstants.DEBUG_KEY);
+				DebugLogging.sendTimerMessage("geometry.get_points", start, NitroConstants.DEBUG_KEY);
 			}
 		}
     }
