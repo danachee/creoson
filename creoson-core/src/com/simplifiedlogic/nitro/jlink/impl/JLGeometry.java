@@ -310,8 +310,7 @@ public class JLGeometry implements IJLGeometry {
 				return null;
 			}
 
-			// Now get the file
-			// Go through the features to find the matching one
+			// Return the points for all files in the assembly
 			CallFeatures components = asm.listFeaturesByType(Boolean.FALSE, FeatureType.FEATTYPE_COMPONENT);
 			CallComponentFeat component;
 			CallFeature feat;
