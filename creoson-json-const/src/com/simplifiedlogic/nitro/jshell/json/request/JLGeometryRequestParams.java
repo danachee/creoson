@@ -32,6 +32,7 @@ public interface JLGeometryRequestParams {
     public static final String FUNC_BOUND_BOX		= "bound_box";
     public static final String FUNC_GET_SURFACES	= "get_surfaces";
     public static final String FUNC_GET_EDGES		= "get_edges";
+    public static final String FUNC_GET_POINTS		= "get_points";
     
     // request fields
     public static final String PARAM_MODEL			= "file";
