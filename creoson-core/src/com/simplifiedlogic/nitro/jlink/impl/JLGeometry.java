@@ -18,25 +18,43 @@
  */
 package com.simplifiedlogic.nitro.jlink.impl;
 
+import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
+import com.ptc.cipjava.intseq;
 import com.ptc.cipjava.jxthrowable;
+import com.ptc.pfc.pfcAssembly.Assembly;
+import com.ptc.pfc.pfcAssembly.ComponentPath;
+import com.ptc.pfc.pfcAssembly.pfcAssembly;
+import com.ptc.pfc.pfcBase.Point3D;
+import com.ptc.pfc.pfcBase.Transform3D;
+import com.ptc.pfc.pfcFeature.FeatureType;
 import com.ptc.pfc.pfcGeometry.ContourTraversal;
+import com.ptc.pfc.pfcGeometry.Point;
+import com.ptc.pfc.pfcModelItem.ModelItem;
+import com.ptc.pfc.pfcModelItem.ModelItems;
 import com.ptc.pfc.pfcModelItem.ModelItemType;
+import com.ptc.pfc.pfcModel.ModelType;
 import com.simplifiedlogic.nitro.jlink.calls.base.CallOutline3D;
 import com.simplifiedlogic.nitro.jlink.calls.base.CallPoint3D;
+import com.simplifiedlogic.nitro.jlink.calls.componentfeat.CallComponentFeat;
+import com.simplifiedlogic.nitro.jlink.calls.feature.CallFeature;
+import com.simplifiedlogic.nitro.jlink.calls.feature.CallFeatures;
 import com.simplifiedlogic.nitro.jlink.calls.geometry.CallContour;
 import com.simplifiedlogic.nitro.jlink.calls.geometry.CallContours;
 import com.simplifiedlogic.nitro.jlink.calls.geometry.CallEdge;
 import com.simplifiedlogic.nitro.jlink.calls.geometry.CallEdges;
 import com.simplifiedlogic.nitro.jlink.calls.geometry.CallSurface;
 import com.simplifiedlogic.nitro.jlink.calls.model.CallModel;
+import com.simplifiedlogic.nitro.jlink.calls.model.CallModelDescriptor;
 import com.simplifiedlogic.nitro.jlink.calls.modelitem.CallModelItem;
 import com.simplifiedlogic.nitro.jlink.calls.session.CallSession;
 import com.simplifiedlogic.nitro.jlink.calls.solid.CallSolid;
 import com.simplifiedlogic.nitro.jlink.data.AbstractJLISession;
 import com.simplifiedlogic.nitro.jlink.data.ContourData;
+import com.simplifiedlogic.nitro.jlink.data.PointData;
 import com.simplifiedlogic.nitro.jlink.data.EdgeData;
 import com.simplifiedlogic.nitro.jlink.data.JLBox;
 import com.simplifiedlogic.nitro.jlink.data.SurfaceData;
@@ -257,6 +275,98 @@ public class JLGeometry implements IJLGeometry {
     	}
     }
     
+    /* (non-Javadoc)
+     * @see com.simplifiedlogic.nitro.jlink.intf.IJLGeometry#getPoints(java.lang.String)
+     */
+    @Override
+    public Hashtable<String, List<PointData>> getPoints(String sessionId) throws JLIException {
+
+        JLISession sess = JLISession.getSession(sessionId);
+
+        return getPoints(sess);
+    }
+
+    /* (non-Javadoc)
+     * @see com.simplifiedlogic.nitro.jlink.intf.IJLGeometry#getPoints(java.util.List, com.simplifiedlogic.nitro.jlink.data.AbstractJLISession)
+     */
+    @Override
+    public Hashtable<String, List<PointData>> getPoints(AbstractJLISession sess) throws JLIException {
+		if (sess==null)
+			throw new JLIException("No session found");
+
+		long start = 0;
+		if (NitroConstants.TIME_TASKS)
+			start = System.currentTimeMillis();
+		try {
+	        JLGlobal.loadLibrary();
+
+	        CallSession session = JLConnectionUtil.getJLSession(sess.getConnectionId());
+	        if (session == null)
+	            return null;
+
+			// Get the top level assembly
+			CallSolid asm = JlinkUtils.getModelSolid(session, null);
+			if (asm.getModel().GetType() != ModelType.MDL_ASSEMBLY) {
+				return null;
+			}
+
+			// Now get the file
+			// Go through the features to find the matching one
+			CallFeatures components = asm.listFeaturesByType(Boolean.FALSE, FeatureType.FEATTYPE_COMPONENT);
+			CallComponentFeat component;
+			CallFeature feat;
+			CallModelDescriptor desc;
+			CallModel childModel;
+			Hashtable<String, List<PointData>>  result = new Hashtable<String, List<PointData>>();
+			for (int i = 0; i < components.getarraysize(); i++) {
+				feat = components.get(i);
+				// If its not a component, keep going
+				if (!(feat instanceof CallComponentFeat))
+					continue;
+
+				// Ok, got one, now get the model from it
+				component = (CallComponentFeat)feat;
+				desc = component.getModelDescr();
+				childModel = session.getModelFromDescr(desc);
+
+				// Get the component path
+				intseq myids = intseq.create();
+				myids.append(component.getComponentFeat().GetId());
+				ComponentPath compPath = pfcAssembly.CreateComponentPath((Assembly)asm.getModel(), myids);
+
+				// Get the transform
+				Transform3D tfd = compPath.GetTransform(true);
+
+				// Now find the points and transform them
+				ModelItems mis = childModel.getModel().ListItems(ModelItemType.ITEM_POINT);
+				List<PointData> resultp = new Vector<PointData>();
+				for (int j = 0; j < mis.getarraysize(); j++) {
+					ModelItem mi = mis.get(j);
+					// transform it
+					Point3D npt = tfd.TransformPoint(((Point)mi).GetPoint());
+					PointData pd = new PointData();
+					double x = npt.get(0);
+					double y = npt.get(1);
+					double z = npt.get(2);
+
+					pd.setName(mi.GetName());
+					pd.setLocation(x, y, z);
+					resultp.add(pd);
+				}
+				result.put(childModel.getFileName(), resultp);
+			}
+			return result;
+		}
+		catch (jxthrowable e) {
+			throw JlinkUtils.createException(e);
+		}
+		finally {
+			if (NitroConstants.TIME_TASKS) {
+				DebugLogging.sendTimerMessage("geometry.get_edges", start, NitroConstants.DEBUG_KEY);
+			}
+		}
+    }
+
     /**
      * An implementation of ModelItemLooper which collects information about surfaces in a model
      * @author Adam Andrews
