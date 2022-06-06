@@ -32,6 +32,7 @@ import com.ptc.pfc.pfcBase.Point3D;
 import com.ptc.pfc.pfcBase.Transform3D;
 import com.ptc.pfc.pfcFeature.FeatureType;
 import com.ptc.pfc.pfcGeometry.ContourTraversal;
+import com.ptc.pfc.pfcGeometry.CoordSystem;
 import com.ptc.pfc.pfcGeometry.Point;
 import com.ptc.pfc.pfcModelItem.ModelItem;
 import com.ptc.pfc.pfcModelItem.ModelItems;
@@ -343,6 +344,21 @@ public class JLGeometry implements IJLGeometry {
 					ModelItem mi = mis.get(j);
 					// transform it
 					Point3D npt = tfd.TransformPoint(((Point)mi).GetPoint());
+					PointData pd = new PointData();
+					double x = npt.get(0);
+					double y = npt.get(1);
+					double z = npt.get(2);
+
+					pd.setName(mi.GetName());
+					pd.setLocation(x, y, z);
+					resultp.add(pd);
+				}
+				// Now find the coordinate systems and transform them
+				mis = childModel.getModel().ListItems(ModelItemType.ITEM_COORD_SYS);
+				for (int j = 0; j < mis.getarraysize(); j++) {
+					ModelItem mi = mis.get(j);
+					// transform it
+					Point3D npt = tfd.TransformPoint(((CoordSystem)mi).GetCoordSys().GetOrigin());
 					PointData pd = new PointData();
 					double x = npt.get(0);
 					double y = npt.get(1);
