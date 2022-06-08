@@ -34,6 +34,7 @@ import com.ptc.pfc.pfcSelect.SelectionPair;
 
 import com.ptc.pfc.pfcBase.Point3D;
 import com.simplifiedlogic.nitro.jlink.calls.assembly.CallAssembly;
+import com.simplifiedlogic.nitro.jlink.calls.model.CallModel;
 import com.simplifiedlogic.nitro.jlink.calls.session.CallSession;
 import com.simplifiedlogic.nitro.jlink.calls.solid.CallMassProperty;
 import com.simplifiedlogic.nitro.jlink.calls.solid.CallSolid;
@@ -322,13 +323,16 @@ public class JLJsonFileHandler extends JLJsonCommandHandler implements JLFileReq
     	return out;
 	}
 
-	private static Map<String, Object> getCenterOfMassData(String sessionId) throws JLIException {
+	private static Map<String, Object> getCenterOfMassData(String filename, String sessionId) throws JLIException {
 		Map<String, Object> centerOfMassData = new HashMap<>();
 	
 		try {
 			JLISession sess = JLISession.getSession(sessionId);
 			CallSession session = JLConnectionUtil.getJLSession(sess.getConnectionId());
-			CallSolid solid = JlinkUtils.getModelSolid(session, null);
+			CallModel m = JlinkUtils.getFile(session, filename, true);
+			if (!(m instanceof CallSolid))
+				throw new JLIException("File '" + m.getFileName() + "' must be a solid");
+			CallSolid solid = (CallSolid)m;
 			CallMassProperty mp = solid.getMassProperty(null);
 			Point3D cg = mp.getGravityCenter();
 			centerOfMassData.put("x", cg.get(0));
@@ -351,7 +355,7 @@ public class JLJsonFileHandler extends JLJsonCommandHandler implements JLFileReq
 			out.put(OUTPUT_DENSITY, result.getDensity());
 			out.put(OUTPUT_SURFACE_AREA, result.getSurfaceArea());
 			
-			Map<String, Object> centerOfMassData = getCenterOfMassData(sessionId);
+			Map<String, Object> centerOfMassData = getCenterOfMassData(filename, sessionId);
 			out.put("gravity_center", centerOfMassData);
 			if (result.getCenterGravityInertiaTensor()!=null) {
 				Hashtable<String, Object> tmp = writeInertia(result.getCenterGravityInertiaTensor());
